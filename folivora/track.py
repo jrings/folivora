@@ -45,7 +45,7 @@ def get_current_state(url, zip):
     ts = J.pop("time")
     now = datetime.datetime.now()
     dt = datetime.datetime(
-        year=now.year, month=now.month, day=ts["day"], hour=ts["hour"], minute=ts["minute"], second=0)
+        year=now.year, month=now.month, day=now.day, hour=ts["hour"], minute=ts["minute"], second=0)
     utcnow = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     J["dt_local"] = dt
     J["read_dt_utc"] = utcnow
