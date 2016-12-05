@@ -38,7 +38,11 @@ def main(url, target_fname="/tmp/thermostat_tracker.csv", delay=60, zip=""):
         now = datetime.datetime.now()
         dt = datetime.datetime(
             year=now.year, month=now.month, day=ts["day"], hour=ts["hour"], minute=ts["minute"], second=0)
-        J["local_datetime"] = dt
+        utcnow = datetime.datetime.utcnow()
+        dt_utc = datetime.datetime(
+            year=utcnow.year, month=utcnow.month, day=ts["day"], hour=ts["hour"], minute=ts["minute"], second=0)
+        J["dt_local"] = dt
+        J["dt_utc"] = dt_utc
         W = poll_current_weather(zip)
         J["t_out"] = W["temperature"]
         J["weather"] = W["text"]
