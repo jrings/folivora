@@ -20,13 +20,16 @@ class Main(object):
         O["type"] = "out"
         D["temp"] = D["t_in"]
         O["temp"] = D["t_out"]
+
         df = pd.concat((D, O))
-        chart = Chart(df
+        df["dt_local"] = pd.to_datetime(df.dt_local)
+        df["dt_local"] = [d.strftime("%H:%M") for d in df.dt_local]
+        chart = Chart(df, width=1000, height=600
                       ).mark_line().encode(
-            x='dt_local:T',
+            x='dt_local',
             y='temp:Q',
             color="type:O"
-        )
+        ).configure_axis()
         return chart.to_html()
 
 
