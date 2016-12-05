@@ -1,2 +1,3 @@
 clize
 requests
+git+https://github.com/lorenzosaino/python-weather-api.git

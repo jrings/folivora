@@ -4,15 +4,27 @@ import time
 
 import api
 import clize
+import numpy as np
 import pandas as pd
+import pywapi
+from sigtools.modifiers import autokwoargs
 
 
-def main(url, target_fname="/tmp/thermostat_tracker.csv", delay=60):
+def poll_current_weather(zip):
+    if isinstance(zip, int):
+        zip = str(zip)
+    weather = pywapi.get_weather_from_weather_com(zip, units="imperial")
+    return weather["current_conditions"]
+
+
+@autokwoargs
+def main(url, target_fname="/tmp/thermostat_tracker.csv", delay=60, zip=""):
     """
 
     :param url: URL for the thermostat API
     :param target_fname: Tracker filename, where data is saved
     :param delay: Time delay [s] between polls of the thermostat state
+    :param zip: Zip code of thermostat - to add weather data
     """
     if delay < 60:
         raise ValueError("Polling delay must be 60 seconds or more")
@@ -27,13 +39,28 @@ def main(url, target_fname="/tmp/thermostat_tracker.csv", delay=60):
         dt = datetime.datetime(
             year=now.year, month=now.month, day=ts["day"], hour=ts["hour"], minute=ts["minute"], second=0)
         J["local_datetime"] = dt
+        W = poll_current_weather(zip)
+        J["t_out"] = W["temperature"]
+        J["weather"] = W["text"]
+        J["humidity"] = W["humidity"]
 
-        if df is None:
-            df = pd.DataFrame([J])
-        else:
-            df = pd.concat((df, pd.DataFrame([J])))
+        df = _append_to_dataframe(J, df)
+
         df.to_csv(target_fname, index=False)
         time.sleep(delay)
+
+
+def _append_to_dataframe(J, df):
+    if df is None:
+        df = pd.DataFrame([J])
+    else:
+        if not set(df.columns) == set(list(J.keys())):
+            # New keys?
+            new_columns = [c for c in J if c not in df.columns]
+            for col in new_columns:
+                df[col] = np.nan
+        df = pd.concat((df, pd.DataFrame([J])))
+    return df.drop_duplicates("local_datetime")
 
 
 if __name__ == "__main__":
