@@ -33,25 +33,29 @@ def main(url, target_fname="/tmp/thermostat_tracker.csv", delay=60, zip=""):
     else:
         df = None
     while True:
-        J = api.get_state(url)
-        ts = J.pop("time")
-        now = datetime.datetime.now()
-        dt = datetime.datetime(
-            year=now.year, month=now.month, day=ts["day"], hour=ts["hour"], minute=ts["minute"], second=0)
-        utcnow = datetime.datetime.utcnow()
-        dt_utc = datetime.datetime(
-            year=utcnow.year, month=utcnow.month, day=ts["day"], hour=ts["hour"], minute=ts["minute"], second=0)
-        J["dt_local"] = dt
-        J["dt_utc"] = dt_utc
-        W = poll_current_weather(zip)
-        J["t_out"] = W["temperature"]
-        J["weather"] = W["text"]
-        J["humidity"] = W["humidity"]
-
+        J = get_current_state(url, zip)
         df = _append_to_dataframe(J, df)
 
         df.to_csv(target_fname, index=False)
         time.sleep(delay)
+
+
+def get_current_state(url, zip):
+    J = api.get_state(url)
+    ts = J.pop("time")
+    now = datetime.datetime.now()
+    dt = datetime.datetime(
+        year=now.year, month=now.month, day=ts["day"], hour=ts["hour"], minute=ts["minute"], second=0)
+    utcnow = datetime.datetime.utcnow()
+    dt_utc = datetime.datetime(
+        year=utcnow.year, month=utcnow.month, day=ts["day"], hour=ts["hour"], minute=ts["minute"], second=0)
+    J["dt_local"] = dt
+    J["dt_utc"] = dt_utc
+    W = poll_current_weather(zip)
+    J["t_out"] = W["temperature"]
+    J["weather"] = W["text"]
+    J["humidity"] = W["humidity"]
+    return J
 
 
 def _append_to_dataframe(J, df):
