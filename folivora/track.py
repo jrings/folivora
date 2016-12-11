@@ -10,21 +10,22 @@ import pywapi
 from sigtools.modifiers import autokwoargs
 
 
-def poll_current_weather(zip):
-    if isinstance(zip, int):
-        zip = str(zip)
-    weather = pywapi.get_weather_from_weather_com(zip, units="imperial")
+def poll_current_weather(zip_):
+    if isinstance(zip_, int):
+        zip_ = str(zip_)
+    weather = pywapi.get_weather_from_weather_com(zip_, units="imperial")
+    
     return weather["current_conditions"]
 
 
 @autokwoargs
-def main(url, target_fname="/tmp/thermostat_tracker.csv", delay=60, zip=""):
+def main(url, zip_, target_fname="/tmp/thermostat_tracker.csv", delay=60):
     """
 
     :param url: URL for the thermostat API
     :param target_fname: Tracker filename, where data is saved
     :param delay: Time delay [s] between polls of the thermostat state
-    :param zip: Zip code of thermostat - to add weather data
+    :param zip_: Zip code of thermostat - to add weather data
     """
     if delay < 60:
         raise ValueError("Polling delay must be 60 seconds or more")
@@ -33,7 +34,7 @@ def main(url, target_fname="/tmp/thermostat_tracker.csv", delay=60, zip=""):
     else:
         df = None
     while True:
-        J = get_current_state(url, zip)
+        J = get_current_state(url, zip_)
         df = _append_to_dataframe(J, df)
 
         df.to_csv(target_fname, index=False)
